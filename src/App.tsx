@@ -17,6 +17,7 @@ import StaffDashboard from "./pages/StaffDashboard";
 import TimetableGenerator from "./pages/TimetableGenerator";
 import DepartmentWorkspace from "./pages/DepartmentWorkspace";
 import NotFound from "./pages/NotFound";
+import EnhancedAdminRoute from "./components/EnhancedAdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,10 @@ const App = () => (
                 <MainAdminDashboard />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/enhanced-admin"
+            element={<EnhancedAdminRoute />}
           />
           <Route
             path="/dept-admin"

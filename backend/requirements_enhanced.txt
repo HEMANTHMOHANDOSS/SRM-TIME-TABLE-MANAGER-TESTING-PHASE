@@ -1,0 +1,5 @@
+# Additional requirements for the enhanced admin dashboard
+# Add these to your existing requirements.txt
+
+openpyxl==3.1.2
+# Note: All other dependencies should already be in your existing requirements.txt

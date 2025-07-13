@@ -3,16 +3,12 @@ import hashlib
 import secrets
 import string
 from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify, send_file, flash, redirect, url_for
+from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import sqlite3
 import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill
 import tempfile
-import google.generativeai as genai
-
-# Configure Gemini AI
-genai.configure(api_key=os.getenv('GEMINI_API_KEY', 'your-gemini-api-key'))
 
 admin_bp = Blueprint('admin_enhancements', __name__, url_prefix='/admin')
 
@@ -549,53 +545,28 @@ def chatbot_query():
         if not user_query:
             return jsonify({'error': 'Query is required'}), 400
         
-        # Context for the AI about the admin dashboard
-        context = """
-        You are an AI assistant for the SRM Timetable AI Main Admin Dashboard. 
-        This dashboard includes the following features:
+        # Simple rule-based responses for common queries
+        responses = {
+            'credentials': 'To generate credentials: Click "Generate Credentials" button. This will create usernames and passwords for staff and department admins who don\'t have credentials yet. Use "Export Credentials" to download them as Excel file.',
+            'analytics': 'The Analytics section shows: Total departments, staff count, pending approvals, and timetable generations. These numbers update automatically as data changes in the system.',
+            'notifications': 'To send notifications: Enter title and message, select recipient type (staff, dept_admin, or all), then click Send. Recent notifications are shown below the form.',
+            'syllabus': 'Syllabus Review shows uploaded files. You can approve or reject each upload with optional review notes. Status changes are tracked with timestamps.',
+            'timetables': 'Timetable Logs show all generated timetables with department name, generation type, creator, and timestamp. This helps track system usage.',
+            'help': 'Available features: 1) Credential Generator 2) Analytics Summary 3) Notification Sender 4) Syllabus Review 5) Timetable Logs. Ask about any specific feature for detailed help.'
+        }
         
-        1. Credential Generator: Generate secure usernames and passwords for staff and department admins
-        2. Analytics Summary: View statistics about departments, staff, approvals, and timetables
-        3. Notification Sender: Send notifications to staff, department admins, or all users
-        4. Syllabus Review Panel: Review, approve, or reject uploaded syllabus files
-        5. Timetable Generation Logs: View logs of all timetable generations
+        # Find best matching response
+        query_lower = user_query.lower()
+        response = responses.get('help')  # default
         
-        The system manages:
-        - Multiple departments (CSE, ECE, MECH, CIVIL, IT)
-        - User roles (Main Admin, Department Admin, Staff)
-        - Timetable generation and management
-        - Subject and classroom allocation
-        - Staff workload management
-        
-        Please provide helpful, accurate responses about using these features.
-        Keep responses concise and actionable.
-        """
-        
-        try:
-            # Initialize Gemini model
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            
-            # Generate response
-            prompt = f"{context}\n\nUser Question: {user_query}\n\nResponse:"
-            response = model.generate_content(prompt)
-            
-            ai_response = response.text if response.text else "I'm sorry, I couldn't generate a response. Please try rephrasing your question."
-            
-        except Exception as ai_error:
-            # Fallback response if AI fails
-            ai_response = """I'm here to help with the Main Admin Dashboard. You can ask me about:
-            
-            • How to generate credentials for users
-            • Understanding the analytics and statistics
-            • Sending notifications to users
-            • Reviewing and managing syllabus uploads
-            • Viewing timetable generation logs
-            
-            Please try asking a specific question about any of these features."""
+        for key, value in responses.items():
+            if key in query_lower:
+                response = value
+                break
         
         return jsonify({
             'success': True,
-            'response': ai_response
+            'response': response
         })
         
     except Exception as e:
