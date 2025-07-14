@@ -8,6 +8,8 @@ import os
 from dotenv import load_dotenv
 from api_routes import api
 from ai_timetable import TimetableGenerator
+from enhanced_admin_routes import enhanced_admin_bp
+from enhanced_staff_routes import staff_bp
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,8 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # Register Blueprints
 app.register_blueprint(api)
+app.register_blueprint(enhanced_admin_bp)
+app.register_blueprint(staff_bp)
 
 # Initialize the database
 def init_db():
